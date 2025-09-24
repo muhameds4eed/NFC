@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Our Special Page</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ 
+    <style>
+        /* Basic Reset */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Main Body Styling */
+        body {
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #fce4ec; /* Soft pink background */
+            padding: 20px;
+            overflow: hidden; /* Prevent scrollbars from drag effect */
+            touch-action: none; /* Prevent browser handling of touch gestures */
+        }
+
+        /* Main container for the content */
+        .content-container {
+            width: 100%;
+            max-width: 375px;
+            background-color: #fff9fa; /* Very light pink */
+            border-radius: 25px;
+            padding: 20px 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-height: 95vh; /* Limit height to prevent overflow */
+            overflow-y: auto; /* Add vertical scroll if content is too long */
+            scrollbar-width: thin;
+            scrollbar-color: #e91e63 #fff9fa;
+        }
+
+        /* Custom scrollbar for WebKit browsers (Chrome, Safari) */
+        .content-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .content-container::-webkit-scrollbar-track {
+            background: #fff9fa;
+            border-radius: 10px;
+        }
+
+        .content-container::-webkit-scrollbar-thumb {
+            background-color: #e91e63;
+            border-radius: 10px;
+            border: 2px solid #fff9fa;
+        }
+
+        /* The main message card */
+        .message-card {
+            background-color: #ffffff;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .message-card h1 {
+            font-family: 'Pacifico', cursive;
+            color: #e91e63; /* Bright pink */
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .message-card p {
+            color: #555;
+            font-size: 15px;
+            line-height: 1.6;
+            text-align: justify;
+        }
+
+        /* Photo Stack Container */
+        .photo-stack-container {
+            width: 100%;
+            aspect-ratio: 4 / 3; /* Give the container a defined shape */
+            position: relative;
+            margin: 20px 0;
+            perspective: 1000px;
+            touch-action: none; /* Prevent browser handling of touch gestures */
+        }
+
+        /* Individual Photo Card */
+        .photo-card {
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            background-size: cover;
+            background-position: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            touch-action: none; /* Prevent browser handling of touch gestures */
+        }
+
+        .photo-card.dragging {
+            cursor: grabbing;
+            transition: none; /* No transition while actively dragging */
+        }
+        
+        /* Bottom Widgets Container */
+        .widgets-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .widget {
+            background-color: #ffffff;
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .widget h2 {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 8px;
+        }
+
+        .widget .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #e91e63;
+        }
+
+        .widget .subtext {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .widget .icon {
+            font-size: 20px;
+            color: #ff80ab; /* Lighter pink for icon */
+        }
+    </style>
+</head>
+<body>
+    <div class="content-container">
+        <div class="message-card">
+            <h1>To My Love,</h1>
+            <p>
+                Every day, your presence makes everything better. I never knew love could feel so deep and so real until I met you. You're not just in my heart; you are my heart. I love the way you talk, laugh, and even the way you stay quiet. I don't need anything else in this world as long as I have you. I promise to love you, stand by you, and make you feel special every single day.
+            </p>
+        </div>
+
+        <div class="photo-stack-container" id="photoStack">
+             </div>
+
+        <div class="widgets-container">
+            <div class="widget">
+                <h2>You're my daily dose of</h2>
+                <span class="icon">❤️</span>
+                <div class="subtext">happiness</div>
+            </div>
+            <div class="widget">
+                <h2>We've Been Together For</h2>
+                <div class="value" id="anniversaryCounter">...</div>
+                <div class="subtext" id="anniversarySubtext">yr : dy : hr : sc</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const photoStack = document.getElementById('photoStack');
+        const imageUrls = [
+            "https://i.postimg.cc/ydgZxhj6/photo-1.jpg",
+            "https://i.postimg.cc/TPSKzL6z/photo-10.jpg",
+            "https://i.postimg.cc/NfwHGHHY/photo-2.jpg",
+            "https://i.postimg.cc/ZYNNhc0V/photo-3.jpg",
+            "https://i.postimg.cc/tTKVx1v3/photo-4.jpg",
+            "https://i.postimg.cc/x8LNy0BW/photo-5.jpg",
+            "https://i.postimg.cc/ncYQXh4m/photo-6.jpg",
+            "https://i.postimg.cc/RZSJKxdD/photo-7.jpg",
+            "https://i.postimg.cc/Mp9MY3rK/photo-8.jpg",
+            "https://i.postimg.cc/3wWyfjPj/photo-9.jpg",                    
+        ];
+        
+         let activeCard = null;
+        let startX = 0, startY = 0;
+        let isDragging = false;
+        let isAnimating = false;
+        let dragIntent = null; 
+        
+        function initializeStack() {
+            photoStack.innerHTML = ''; // Clear previous
+            imageUrls.forEach((url) => {
+                const card = document.createElement('div');
+                card.classList.add('photo-card');
+                card.style.backgroundImage = `url(${url})`;
+                photoStack.appendChild(card);
+            });
+            updateStackPositions(true); // Initial setup without animation
+        }
+
+        function updateStackPositions(instant = false) {
+            const currentCards = Array.from(photoStack.children);
+            currentCards.forEach((card, index) => {
+                if(instant) card.style.transition = 'none';
+                card.style.zIndex = imageUrls.length - index;
+                card.style.transform = `translateY(${index * 6}px) scale(${1 - index * 0.04}) rotate(${index * -2}deg)`;
+                card.classList.remove('dragging');
+                if(instant) void card.offsetWidth; // force reflow
+                if(instant) card.style.transition = ''; // Restore transition
+                removeEventListeners(card);
+            });
+
+            if (currentCards.length > 0) {
+                activeCard = currentCards[0];
+                addEventListeners(activeCard);
+            } else {
+                activeCard = null;
+            }
+        }
+
+        function addEventListeners(element) {
+            if (!element) return;
+            element.addEventListener('mousedown', dragStart, { passive: true });
+            element.addEventListener('touchstart', dragStart, { passive: true });
+        }
+
+        function removeEventListeners(element) {
+            if (!element) return;
+             element.removeEventListener('mousedown', dragStart);
+            element.removeEventListener('touchstart', dragStart);
+        }
+
+        function dragStart(e) {
+            if (!activeCard || isAnimating) return;
+
+            startX = e.pageX ?? e.touches[0].pageX;
+            startY = e.pageY ?? e.touches[0].pageY;
+            
+            document.addEventListener('mousemove', dragMove);
+            document.addEventListener('touchmove', dragMove);
+            document.addEventListener('mouseup', dragEnd);
+            document.addEventListener('touchend', dragEnd);
+        }
+
+        function dragMove(e) {
+            if (!activeCard) return;
+
+            const currentX = e.pageX ?? e.touches[0].pageX;
+            const currentY = e.pageY ?? e.touches[0].pageY;
+
+            const diffX = currentX - startX;
+            const diffY = currentY - startY;
+
+            if (dragIntent === null) {
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    dragIntent = 'swiping';
+                } else {
+                    dragIntent = 'scrolling';
+                }
+            }
+
+            if (dragIntent === 'swiping') {
+                if (e.cancelable) e.preventDefault();
+                if (!isDragging) {
+                    isDragging = true;
+                    activeCard.classList.add('dragging');
+                }
+                const rotate = diffX * 0.1;
+                activeCard.style.transform = `translateX(${diffX}px) translateY(${diffY}px) rotate(${rotate}deg)`;
+            }
+        }
+
+        // ##### THIS ENTIRE FUNCTION HAS BEEN UPDATED #####
+        function dragEnd(e) {
+            if (isDragging) {
+                const diffX = (e.pageX ?? e.changedTouches[0].pageX) - startX;
+                const decisionThreshold = 100;
+
+                if (Math.abs(diffX) > decisionThreshold) {
+                    isAnimating = true;
+                    const swipedCard = activeCard;
+                    removeEventListeners(swipedCard);
+
+                    // Animate the other cards up immediately
+                    const otherCards = Array.from(photoStack.children).filter(c => c !== swipedCard);
+                    otherCards.forEach((card, index) => {
+                        card.style.transform = `translateY(${index * 6}px) scale(${1 - index * 0.04}) rotate(${index * -2}deg)`;
+                        card.style.zIndex = imageUrls.length - (index + 1); // Adjust z-index
+                    });
+                    
+                    // Make the return animation faster to feel more responsive
+                    swipedCard.style.transition = 'transform 0.3s ease-out';
+                    
+                    const lastCardIndex = imageUrls.length - 1;
+                    const backTransform = `translateY(${lastCardIndex * 6}px) scale(${1 - lastCardIndex * 0.04}) rotate(${lastCardIndex * -2}deg)`;
+                    swipedCard.style.transform = backTransform;
+                    swipedCard.style.zIndex = 0;
+
+                    swipedCard.addEventListener('transitionend', () => {
+                        // Restore the original transition style from CSS
+                        swipedCard.style.transition = ''; 
+                        photoStack.appendChild(swipedCard);
+                        updateStackPositions(true); // Instantly fix styles and listeners
+                        isAnimating = false;
+                    }, { once: true });
+
+                } else {
+                    // Snap back
+                    activeCard.style.transform = `translateY(0px) scale(1) rotate(0deg)`;
+                }
+            }
+            
+            activeCard?.classList.remove('dragging');
+            document.removeEventListener('mousemove', dragMove);
+            document.removeEventListener('touchmove', dragMove);
+            document.removeEventListener('mouseup', dragEnd);
+            document.removeEventListener('touchend', dragEnd);
+
+            isDragging = false;
+            dragIntent = null;
+        }
+
+        initializeStack();
+
+        /*
+        ==============================================
+        // ANNIVERSARY COUNTER SCRIPT //
+        ==============================================
+        */
+        const anniversaryStartDate = new Date("2024-09-19T00:00:00"); 
+
+        const counterElement = document.getElementById('anniversaryCounter');
+
+        function updateAnniversaryCounter() {
+            const now = new Date();
+            let totalSeconds = Math.floor((now - anniversaryStartDate) / 1000);
+
+            let totalDays = Math.floor(totalSeconds / (3600 * 24));
+            
+            let years = Math.floor(totalDays / 365);
+            let days = totalDays % 365;
+            
+            let secondsLeft = totalSeconds % (3600 * 24);
+            let hours = Math.floor(secondsLeft / 3600);
+            let seconds = secondsLeft % 60;
+
+            const format = (num) => num.toString().padStart(2, '0');
+            counterElement.textContent = `${years}:${format(days)}:${format(hours)}:${format(seconds)}`;
+        }
+
+        setInterval(updateAnniversaryCounter, 1000);
+        updateAnniversaryCounter();
+    </script>
+</body>
+</html>
